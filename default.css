@@ -1,0 +1,210 @@
+ {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	margin: 0;
+	
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	color: #666666;
+}
+
+h1, h2, h3 {
+	text-transform: lowercase;
+	font-weight: normal;
+	color: #333333;
+}
+
+h1 {
+	font-size: 2.4em;
+}
+
+h2 {
+	font-size: 1.6em;
+}
+
+h3 {
+	font-size: 1em;
+}
+
+p, blockquote, ul, ol {
+	
+}
+
+p {
+}
+
+blockquote {
+	margin-left: 2em;
+	margin-right: 2em;
+	font-style: italic;
+}
+
+ul {
+	margin-left: 3em;
+}
+
+ul li {
+}
+
+ol {
+	margin-left: 3em;
+}
+
+ol li {
+}
+
+a {
+	color: #333333;
+}
+
+a:hover {
+	text-decoration: none;
+	color: #000000;
+}
+
+
+
+/* Boxed Style */
+
+.boxed {
+border: 1px solid black ;
+text-align: center;
+}
+
+.boxed .title {
+	margin-bottom: 0px;
+}
+
+.boxed .content {
+}
+
+/* Post */
+
+.post {
+}
+
+.post .title {
+}
+
+.post .date {
+	margin-bottom: 2em;
+}
+
+.post .date .month {
+}
+
+.post .date .day {
+}
+
+.post .date .year {
+}
+
+.post .meta {
+	margin-bottom: 20px;
+	padding: 10px 0;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 4px solid #EEEEEE;
+	font-size: x-small;
+}
+
+.post .meta p {
+	margin: 0;
+}
+
+.post .story {
+}
+
+/* Header */
+
+#header {
+	height: 60px;
+	background: #000000 url(images/img02.gif) repeat-x;
+}
+
+/* Header > Logo */
+
+#logo {
+	float: right;
+}
+
+#logo h1, #logo h2 {
+	float: right;
+	padding: 0 10px 0 0
+}
+
+#logo h2 {
+	padding-right: .25em;
+}
+
+#logo a {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+/* Header > Menu */
+
+#menu {
+	float: left;
+	margin-left: 20;
+}
+
+#menu ul {
+	margin: 0;
+	padding: 25px 10px 10px 0;
+	list-style: none;
+}
+
+#menu li {
+	display: inline;
+}
+
+#menu a {
+	display: block;
+	float: left;
+	padding: 0 15px;
+	text-decoration: none;
+	text-transform: lowercase;
+	font-size: 1em;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+#menu a:hover {
+	text-decoration: underline;
+}
+
+#mybutton {
+    background-image:url("images/img01.jpg");
+    background-repeat:no-repeat;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#menu .active a {
+}
+

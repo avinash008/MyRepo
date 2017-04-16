@@ -1,0 +1,383 @@
+<!DOCTYPE html5>
+<html>
+<head>
+<script src="fabric.js"></script>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>Common Orchestrator</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="default.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<script>
+function makeLine(coords) {
+    return new fabric.Line(coords, {
+        fill: 'grey',
+        stroke: 'grey',
+        strokeWidth: 5,
+        selectable: true
+    });
+}
+
+var canvas; 
+
+
+
+
+window.newAnimation = function(){
+   canvas = new fabric.Canvas('canvas');
+   ['object:moving', 'object:scaling'].forEach(addChildMoveLine)
+}
+
+
+
+
+
+
+window.addCircle = function () {
+    var circle = new fabric.Circle({
+        radius: 20, fill: 'green', left: 100, top: 100
+    });
+    canvas.add(circle);
+}
+
+
+
+
+
+//var rect="";
+
+window.addRect = function(){
+var rect = new fabric.Rect({
+  left: 100,
+  top: 100,
+  fill: 'yellow',
+  width: 100,
+  height: 100
+  
+});
+
+
+var id = document.getElementById("frm1");
+rect.toObject = (function(toObject) {
+                return function(){
+		return fabric.util.object.extend(toObject.call(this),{
+
+                    name: id
+                });
+            };
+})(rect.toObject)
+    canvas.add(rect);
+
+}
+
+
+
+
+window.addSubrect = function(){
+var obj = canvas.getActiveObject();
+
+
+left1 = obj.left + 50;
+top1 = obj.top + 60;
+  
+ var rect1 = new fabric.Rect({
+  left: left1,
+  top: top1,
+  fill: 'red',
+  width: 40,
+  height: 40,
+  originX: 'center',
+  originY: 'center',
+  selectable: true
+});
+//if (canvas.getActiveObject() == rect)
+
+ var group = new fabric.Group([ canvas.getActiveObject(),rect1], {
+  
+  
+  left: obj.left,
+  top: obj.top
+
+});
+
+
+
+canvas.remove(canvas.getActiveObject());
+canvas.add(group);
+//canvas.selection = false;
+
+
+}
+
+
+window.addLine = function () {
+     canvas.add(new fabric.Line([50, 50, 300, 50], {
+        
+        stroke: 'green',
+        strokewidth: 3,
+	padding: 10,
+	left: 70,
+        top: 50,
+	scaleY:3,
+	padding: 10
+	
+    }));
+    canvas.add(line);
+}
+
+function addChildLine(options) {
+    canvas.off('object:selected', addChildLine);
+
+    // add the line
+    var fromObject = canvas.addChild.start;
+    var toObject = options.target;
+    var from = fromObject.getCenterPoint();
+    var to = toObject.getCenterPoint();
+    var line = new fabric.Line([from.x, from.y, to.x, to.y], {
+        fill: 'red',
+        stroke: 'red',
+        strokeWidth: 3,
+        selectable: true
+	
+    });
+    canvas.add(line);
+    // so that the line is behind the connected shapes
+    line.sendToBack();
+
+    // add a reference to the line to each object
+    fromObject.addChild = {
+        // this retains the existing arrays (if there were any)
+        from: (fromObject.addChild && fromObject.addChild.from) || [],
+        to: (fromObject.addChild && fromObject.addChild.to)
+    }
+    fromObject.addChild.from.push(line);
+    toObject.addChild = {
+        from: (toObject.addChild && toObject.addChild.from),
+        to: (toObject.addChild && toObject.addChild.to) || []
+    }
+    toObject.addChild.to.push(line);
+
+    // to remove line references when the line gets removed
+    line.addChildRemove = function () {
+        fromObject.addChild.from.forEach(function (e, i, arr) {
+            if (e === line)
+                arr.splice(i, 1);
+        });
+        toObject.addChild.to.forEach(function (e, i, arr) {
+            if (e === line)
+                arr.splice(i, 1);
+        });
+    }
+
+    // undefined instead of delete since we are anyway going to do this many times
+    canvas.addChild = undefined;
+}
+
+function addChildMoveLine(event) {
+    canvas.on(event, function (options) {
+        var object = options.target;
+        var objectCenter = object.getCenterPoint();
+        // udpate lines (if any)
+        if (object.addChild) {
+            if (object.addChild.from)
+                object.addChild.from.forEach(function (line) {
+                    line.set({ 'x1': objectCenter.x, 'y1': objectCenter.y });
+                })
+                if (object.addChild.to)
+                    object.addChild.to.forEach(function (line) {
+                        line.set({ 'x2': objectCenter.x, 'y2': objectCenter.y });
+                    })
+                    }
+
+        canvas.renderAll();
+    });
+}
+
+
+window.addChild = function () {
+    canvas.addChild = {
+        start: canvas.getActiveObject()
+    }
+
+    // for when addChild is clicked twice
+    canvas.off('object:selected', addChildLine);
+    canvas.on('object:selected', addChildLine);
+}
+
+
+
+
+
+
+window.deleteObjects=function(){
+	var activeObject = canvas.getActiveObject(),
+    activeGroup = canvas.getActiveGroup();
+    if (activeObject) {
+        if (confirm('Are you sure?')) {
+            canvas.remove(activeObject);
+        }
+    }
+    else if (activeGroup) {
+        if (confirm('Are you sure?')) {
+            var objectsInGroup = activeGroup.getObjects();
+            canvas.discardActiveGroup();
+            objectsInGroup.forEach(function(object) {
+            canvas.remove(object);
+            });
+        }
+    }
+}
+
+
+
+
+window.savejson=function()
+{
+	if (confirm('Are you sure?'))
+	{
+		
+		canvas.includeDefaultValues = true;
+		var json = canvas.toJSON();
+		var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
+		var dlAnchorElem = document.getElementById('downloadAnchorElem');
+		dlAnchorElem.setAttribute("href", dataStr);
+		dlAnchorElem.setAttribute("download", "scene.json");
+		dlAnchorElem.click();
+		canvas.clear();
+		return dataStr;
+		
+	}
+}
+
+
+
+window.openjson=function()
+{
+// Do some initializing stuff
+
+
+// initialize fabric canvas and assign to global windows object for debug
+//var canvas=window._canvas = new fabric.Canvas('canvas');
+//['object:moving', 'object:scaling'].forEach(Line)
+var jsn = {"objects":[{"type":"line","originX":"left","originY":"top","left":125.5,"top":145.5,"width":180.7,"height":184.99,"fill":"red","stroke":"red","strokeWidth":3,"strokeDashArray":null,"strokeLineCap":"butt","strokeLineJoin":"miter","strokeMiterLimit":10,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"clipTo":null,"backgroundColor":"","fillRule":"nonzero","globalCompositeOperation":"source-over","transformMatrix":null,"skewX":0,"skewY":0,"x1":90.35239361702128,"x2":-90.35239361702128,"y1":92.4927536231884,"y2":-92.4927536231884},{"type":"rect","originX":"left","originY":"top","left":100,"top":100,"width":50,"height":90,"fill":"yellow","stroke":null,"strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeLineJoin":"miter","strokeMiterLimit":10,"scaleX":1,"scaleY":1,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"clipTo":null,"backgroundColor":"","fillRule":"nonzero","globalCompositeOperation":"source-over","transformMatrix":null,"skewX":0,"skewY":0,"rx":0,"ry":0},{"type":"line","originX":"left","originY":"top","left":180.7,"top":328.99,"width":250,"height":0,"fill":"rgb(0,0,0)","stroke":"green","strokeWidth":1,"strokeDashArray":null,"strokeLineCap":"butt","strokeLineJoin":"miter","strokeMiterLimit":10,"scaleX":1,"scaleY":3,"angle":0,"flipX":false,"flipY":false,"opacity":1,"shadow":null,"visible":true,"clipTo":null,"backgroundColor":"","fillRule":"nonzero","globalCompositeOperation":"source-over","transformMatrix":null,"skewX":0,"skewY":0,"x1":-125,"x2":125,"y1":0,"y2":0}]}
+canvas.loadFromJSON(jsn, canvas.renderAll.bind(canvas), function(o, object) {
+    fabric.log(o, object);
+});
+	
+	
+
+	
+}
+
+
+
+
+</script>
+
+
+<div id="header">
+
+	<div id="menu">
+		<ul>
+			
+			<button onClick="newAnimation()">New</button>
+			<a id="downloadAnchorElem" style="display:none"></a>
+			<li><button type="button" onClick="openjson()">Open</button></li>
+			<li><button type="button" onClick="savejson()">Save</button></li>
+			<!--<li><button type="button">Close</button></li>-->   
+		</ul>
+	</div>
+	<div id="logo">
+		<h1><a href="#">Common Orchestrator</a></h1>
+		
+	</div>
+	
+</div>
+
+ <div style="width: 22%; float:left; height:100%; background:#b3dbff; margin:0px"; >
+		<div class="boxed">Pallets</div>
+<br>
+
+<button  class = "button" type="button"
+	onclick="addRect()">
+        <img src="images/img01.jpg" class="cart" style="position:relative;left:1px;">
+	<span style="display:inline; position:relative; top:1px;"><br>VM</span><b></button>
+<button  class = "button" type="button"
+	onclick="addLine()">
+        <img src="images/img05.png" class="cart" style="position:relative;left:1px;">
+	<span style="display:inline; position:relative; top:1px;"><br>Network</span><b></button>
+
+
+
+<button  class = "button" type="button"
+	onclick="addChild()">
+        <img src="images/img04.jpg" class="cart" style="position:relative;left:1px;">
+	<span style="display:inline; position:relative; top:1px;"><br>Port</span><b></button>
+
+<button  class = "button" type="button"
+	onclick="addCircle()">
+	<img src="images/img0003.jpg" class="cart" style="position:relative;left:1px;">
+	<span style="display:inline; position:relative; top:1px;"><br>Router</span><b></button><br><br>
+
+<button type="button" onclick="deleteObjects()">Delete selected object</button>
+<button type="button" onclick="addSubrect()">add storage</button>
+ </div>
+
+<div style="width: 56%; float:left; height:100%; background:#e6f3ff; margin:0px">
+<canvas id="canvas" width="750" height="550" style="border:1px solid #000000"></canvas>
+</div>
+
+<div style="width: 22%; float:left; height:100%; background:#b3dbff; margin:0px">
+<div class="boxed"><div class="boxed">Properties</div>
+<canvas id="canvas2" width="500" height="550" style="border:1px solid #000000"></canvas>
+<script>
+window.canvas = new fabric.Canvas('canvas2');
+
+var textOptions = { 
+  fontSize:16, 
+  left:20, 
+  top:20, 
+  radius:10, 
+  borderRadius: '25px', 
+  hasRotatingPoint: true 
+};
+
+var textObject = new fabric.IText('Enter text here...', textOptions);
+
+canvas.add(textObject).setActiveObject(textObject);
+canvas.renderAll()
+
+document.getElementById('title').addEventListener('keyup', function () {
+  textObject.text = document.getElementById('title').value;
+  canvas.renderAll();
+});
+
+
+</script>
+<!--<p>
+<form id = "frm1" action="/action_page.php"  method="get">
+  Name:      <input type="text" name="name" value="">
+  <br>
+  <br>
+  Property1: <input type="text" name="property1" value="">
+  <br>
+  <br>
+  Property2: <input type="text" name="property1" value="">
+  <br>
+  <br>
+  Property3: <input type="text" name="property1" value="">
+  <br>
+  <br>
+  <input type="submit" value="Save">
+  <input type="submit" value="Cancel">
+</form> -->
+
+
+</div>
+</div>
+
+
+</body>
+</html>
